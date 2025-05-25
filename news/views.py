@@ -4,6 +4,7 @@ from .models import New
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from rest_framework.response import Response
 
 # my serializer
 class NewsListSeria(ModelSerializer):
@@ -44,6 +45,15 @@ class News2ListView(ListAPIView):
     class CustomPagination(LimitOffsetPagination):
         limit_query_param = 'size'
         offset_query_param = 'index_after'
+
+        def get_paginated_response(self, data):
+            return Response({
+                'starts_from':int(self.request.GET.get('index_after'))+1,
+                'size':self.request.GET.get('size'),
+                'next':self.get_next_link(),
+                'previous':self.get_previous_link(),
+                'result':data})
+                
     queryset = New.objects.all()
     serializer_class = NewsListSeria
     pagination_class = CustomPagination
